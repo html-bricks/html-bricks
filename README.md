@@ -20,7 +20,7 @@ Then in your scripts, add
 
 Optionally use `--watch` to enable file watching and live rebuilding.
 
-Alternatively, use the [template](https://github/com/gustavgb/html-bricks-template) to get started.
+Alternatively, use the [template](https://github.com/gustavgb/html-bricks-template) to get started.
 
 ## Usage
 
