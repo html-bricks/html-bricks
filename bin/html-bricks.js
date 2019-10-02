@@ -22,7 +22,7 @@ let config = {
 try {
   const customConfig = fs.readJsonSync(path.resolve(dirname, 'config.json'))
 
-  Object.assign(config, customConfig)
+  config = Object.assign({}, config, customConfig)
 
   console.log('(Using custom config)\n')
 } catch (e) {
@@ -61,7 +61,7 @@ function renderFile (src, modules, addWarning) {
 function build () {
   console.time('Build time')
 
-  glob(config.sourceDir + '/*', function (err, files) {
+  glob(config.sourceDir + '/**/*.*', function (err, files) {
     if (err) {
       throw err
     }
@@ -74,7 +74,7 @@ function build () {
     console.log([
       'Found ' + htmlFiles.length + ' html files',
       'Found ' + moduleFiles.length + ' modules',
-      'Found ' + otherFiles.length + ' other files',
+      'Found ' + otherFiles.length + ' other files'
     ].join('\n') + '\n')
 
     const warnings = []
@@ -123,8 +123,8 @@ function build () {
 }
 
 if (watch) {
-  nodeWatch(path.resolve(dirname, config.sourceDir), { recursive: true }, function(evt, name) {
-    console.log('\n\n%s changed!\n', name);
+  nodeWatch(path.resolve(dirname, config.sourceDir), { recursive: true }, function (evt, name) {
+    console.log('\n\n%s changed!\n', name)
     build()
   })
 
