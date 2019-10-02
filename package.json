@@ -1,6 +1,6 @@
 {
   "name": "html-bricks",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Easily compile modularized html files into flat html files",
   "bin": {
     "html-bricks": "bin/html-bricks.js"
@@ -8,7 +8,17 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["static site", "generator", "html", "modules", "bricks", "html-bricks", "cli", "fast", "simple"],
+  "keywords": [
+    "static site",
+    "generator",
+    "html",
+    "modules",
+    "bricks",
+    "html-bricks",
+    "cli",
+    "fast",
+    "simple"
+  ],
   "author": {
     "name": "Gustav Burchardt",
     "email": "gustavburchardt@gmail.com",
@@ -16,11 +26,11 @@
   },
   "homepage": "https://github.com/gustavgb/html-bricks#readme",
   "bugs": {
-    "url" : "https://github.com/gustavgb/html-bricks/issues"
+    "url": "https://github.com/gustavgb/html-bricks/issues"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/gustavgb/html-bricks.git"
+    "type": "git",
+    "url": "https://github.com/gustavgb/html-bricks.git"
   },
   "license": "MIT",
   "dependencies": {
