@@ -20,6 +20,8 @@ Then in your scripts, add
 
 Optionally use `--watch` to enable file watching and live rebuilding.
 
+Alternatively, use the [template](https://github/com/gustavgb/html-bricks-template) to get started.
+
 ## Usage
 
 Say you have a file `src/index.html` which looks like this:
@@ -71,7 +73,7 @@ You just need to add a few **bricks**:
 </html>
 ```
 
-Easy right?
+Easy right? Take a look at the [template](https://github/com/gustavgb/html-bricks-template) to get started.
 
 ## A few rules
 
