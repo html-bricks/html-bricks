@@ -94,3 +94,7 @@ The default configuration is:
   "buildDir": "build"
 }
 ```
+
+## License
+
+This project is licensed under the MIT license.
