@@ -75,27 +75,7 @@ You just need to add a few **bricks**:
 
 Easy right? Take a look at the [template](https://github/com/gustavgb/html-bricks-template) to get started.
 
-## A few rules
-
-1. All files are placed within the source directory.
-2. Modules end with `.module.html`.
-3. Modules are imported with their relative path (from src), but without the `module.` section.
-   - For example `src/modules/footer.module.html` becomes `modules/footer.html`.
-4. Only html files that are not modules will be compiled. So nested modules are not supported.
-5. All other file types are copied into the build directory.
-
-## Configuration
-
-If you want to configure the source dir and/or build dir, you can do so by adding a `config.json` at the root of your project folder.
-
-The default configuration is:
-
-```json
-{
-  "sourceDir": "src",
-  "buildDir": "build"
-}
-```
+Also, take a look at the [documentation](https://gustavgb.github.io/html-bricks) to learn more.
 
 ## License
 
