@@ -68,7 +68,6 @@ function renderFile (name, content, modules, addWarning) {
         if (headTags.indexOf(p1) === -1) {
           headTags.push(p1)
         }
-        console.log(p1)
         return ''
       }))
 
