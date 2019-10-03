@@ -38,24 +38,53 @@ function mapFile (file) {
   }
 }
 
-function renderFile (src, modules, addWarning) {
-  return fs.readFile(src, 'utf8')
-    .then(res => {
-      const rendered = res.replace(/<module>(.*)<\/module>/g, function (match, p1) {
-        const inferred = modules.find(m => m.name === p1)
-        if (inferred) {
-          if (inferred.content.match(/<module>(.*)<\/module>/g)) {
-            addWarning('Module ' + inferred.name + ' contains illegal <module> tag. Ignored it, but it should be removed.')
-          }
+function removeBreaks (str) {
+  return str.replace(/\n\s*/g, '').replace(/<\/module>/g, '</module>\n')
+}
 
-          return inferred.content
+function getRelativePath (fullPath) {
+  return fullPath.replace(new RegExp('^' + path.resolve(dirname, config.sourceDir) + '/'), '')
+}
+
+const moduleReg = /<module>(.*)<\/module>/g
+const moduleHeadReg = /<module:head>(.*)<\/module:head>/g
+const headReg = /(<head>.*)(<\/head>)/
+
+function renderFile (name, content, modules, addWarning) {
+  const headTags = []
+
+  const rendered = content.replace(moduleReg, function (match, p1) {
+    const inferred = modules.find(m => m.name === p1.replace(/^\s+/, '').replace(/\s+$/, ''))
+    if (inferred) {
+      if (inferred.content.match(moduleReg)) {
+        addWarning('Module ' + inferred.name + ' contains illegal <module> tag. Nested modules are not supported. Ignored it, but it should be removed.')
+      }
+
+      const moduleHeader = inferred.content.replace(/\n\s*/g, '').match(moduleHeadReg) || []
+
+      moduleHeader.forEach(head => head.replace(moduleHeadReg, function (match, p1) {
+        if (headTags.indexOf(p1) === -1) {
+          headTags.push(p1)
         }
+      }))
 
-        addWarning('Unknown module: ' + p1)
-        return ''
-      })
-      return rendered
-    })
+      const scrapedModule = inferred.content.replace(moduleHeadReg, '')
+
+      return scrapedModule
+    }
+
+    addWarning('Unknown module: ' + p1)
+    return ''
+  })
+
+  if (!rendered.match(headReg)) {
+    addWarning('No head found in ' + name + ', but heads are found in modules. Add a head to parent if you want to render child head tags.')
+  }
+
+  const renderedWithHead = rendered.replace(/\n\s*/g, '').replace(headReg, function (match, p1, p2) {
+    return p1 + headTags.join('') + p2
+  })
+  return renderedWithHead
 }
 
 function build () {
@@ -99,14 +128,15 @@ function build () {
       })
       .then(res => {
         const modules = res.map(module => ({
-          content: module.file,
-          name: path.basename(module.src).replace(/module\.html$/, 'html')
+          content: removeBreaks(module.file),
+          name: getRelativePath(module.src).replace(/module\.html$/, 'html')
         }))
 
         const mapped = htmlFiles.map(mapFile)
 
         return Promise.all(mapped.map(f =>
-          renderFile(f.src, modules, addWarning)
+          fs.readFile(f.src, 'utf8')
+            .then(res => renderFile(getRelativePath(f.src), removeBreaks(res), modules, addWarning))
             .then(html => fs.writeFile(f.dest, html, 'utf8'))
         ))
       })
