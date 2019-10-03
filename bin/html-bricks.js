@@ -39,15 +39,17 @@ function mapFile (file) {
 }
 
 function removeBreaks (str) {
-  return str.replace(/\n\s*/g, '').replace(/<\/module>/g, '</module>\n')
+  return str.replace(/\n\s*/g, '').replace(/<\/module(:([^>].)*)?>/g, function (match) {
+    return match + '\n'
+  })
 }
 
 function getRelativePath (fullPath) {
   return fullPath.replace(new RegExp('^' + path.resolve(dirname, config.sourceDir) + '/'), '')
 }
 
-const moduleReg = /<module>(.*)<\/module>/g
-const moduleHeadReg = /<module:head>(.*)<\/module:head>/g
+const moduleReg = /<module>(.*)<\/module>\n/g
+const moduleHeadReg = /<module:head>(.*)<\/module:head>\n/g
 const headReg = /(<head>.*)(<\/head>)/
 
 function renderFile (name, content, modules, addWarning) {
@@ -60,12 +62,14 @@ function renderFile (name, content, modules, addWarning) {
         addWarning('Module ' + inferred.name + ' contains illegal <module> tag. Nested modules are not supported. Ignored it, but it should be removed.')
       }
 
-      const moduleHeader = inferred.content.replace(/\n\s*/g, '').match(moduleHeadReg) || []
+      const moduleHeader = removeBreaks(inferred.content).match(moduleHeadReg) || []
 
       moduleHeader.forEach(head => head.replace(moduleHeadReg, function (match, p1) {
         if (headTags.indexOf(p1) === -1) {
           headTags.push(p1)
         }
+        console.log(p1)
+        return ''
       }))
 
       const scrapedModule = inferred.content.replace(moduleHeadReg, '')
