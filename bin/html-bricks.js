@@ -160,8 +160,6 @@ if (watch) {
     console.log('\n\n%s changed!\n', name)
     build()
   })
-
-  build()
-} else {
-  build()
 }
+
+build()
