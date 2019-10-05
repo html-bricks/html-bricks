@@ -1,6 +1,6 @@
 {
   "name": "html-bricks",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Easily compile modularized html files into flat html files",
   "bin": {
     "html-bricks": "bin/html-bricks.js"
