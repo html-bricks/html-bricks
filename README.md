@@ -2,29 +2,43 @@
 
 The easiest way to compile modularized html files into flat html files 😊
 
-## Installation
+Take a look at the [documentation](https://gustavgb.github.io/html-bricks) or clone the [template repository](https://github.com/gustavgb/html-bricks-template) to get started.
 
-Install the package
+## Installation
 
 `npm install --save-dev html-bricks`
 
-Then in your scripts, add
+## Example
 
-```json
-{
-  "scripts": {
-    "build": "html-bricks"
-  }
-}
+If you have multiple HTML pages and want to share certain parts of the markup between pages, you can do so very simply with `html-bricks`.
+
+A nav bar might look like this
+
+```html
+<nav>
+  <a href="/">Home</a>
+  <a href="/about">About</a>
+  <a href="/contact">Contact</a>
+<nav>
 ```
 
-Optionally use `--watch` to enable file watching and live rebuilding.
+And you might need it inside your index.html
 
-Alternatively, use the [template](https://github.com/gustavgb/html-bricks-template) to get started.
+> Assume that the navigation module is placed at *src/navigation.module.html*
 
-## Usage
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My awesome site!</title>
+  </head>
+  <body>
+    <module>navigation.html</module>
+  </body>
+</html>
+```
 
-Say you have a file `src/index.html` which looks like this:
+Intuitively, this would give you
 
 ```html
 <!DOCTYPE html>
@@ -41,41 +55,6 @@ Say you have a file `src/index.html` which looks like this:
   </body>
 </html>
 ```
-
-That's great! An index with a head and a nav bar. But say you wanted to have multiple pages that all shared the same nav bar and head. With `html-bricks` this is easy!
-
-You just need to add a few **bricks**:
-
-*src/navigation.module.html*
-```html
-<nav>
-  <a href="/">Home</a>
-  <a href="/about">About</a>
-  <a href="/contact">Contact</a>
-<nav>
-```
-
-*src/head.module.html*
-```html
-<head>
-  <title>My awesome site!</title>
-</head>
-```
-
-*src/index.html*
-```html
-<!DOCTYPE html>
-<html>
-  <module>head.html</module>
-  <body>
-    <module>navigation.html</module>
-  </body>
-</html>
-```
-
-Easy right? Take a look at the [template](https://github/com/gustavgb/html-bricks-template) to get started.
-
-Also, take a look at the [documentation](https://gustavgb.github.io/html-bricks) to learn more.
 
 ## License
 
