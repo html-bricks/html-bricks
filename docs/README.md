@@ -1,8 +1,31 @@
 # Documentation
 
-This page is a simple documentation for how to use [html-bricks](https://github.com/gustavgb/html-bricks). Installation guides are found in the repository's [README](https://github.com/gustavgb/html-bricks#readme).
+Using [html-bricks](https://github.com/gustavgb/html-bricks) is very easy but allows you to customize the setup to your preferences.
 
-## Files
+The point of this project is to provide a simple way to modularize html files without building a space ship. Sometimes, all you need is a few *bricks* 😸
+
+## Installation
+
+Install the package
+
+`npm install --save-dev html-bricks`
+
+Then in your scripts, add
+
+```json
+{
+  "scripts": {
+    "build": "html-bricks"
+  }
+}
+```
+
+Optionally use `--watch` to enable file watching and live rebuilding.
+
+Alternatively, use the [template](https://github.com/gustavgb/html-bricks-template) to get started.
+
+
+## Setup
 
 All files must be placed inside the source directory (default *src/*), whether they are modules, stylesheets or other assets.
 
@@ -55,6 +78,29 @@ The default configuration is:
 ```json
 {
   "sourceDir": "src",
-  "buildDir": "build"
+  "buildDir": "build",
+  "plugins": []
 }
 ```
+
+## Plugins
+
+It is possible to extend `html-bricks` with plugins, if you need a more advanced setup. However, this is not necessary.
+
+To enable plugins, you need to have a [configuration](#configuration) in your project. Use the `plugins` property to include plugins. The plugins are run in series from top to bottom.
+
+**Example**
+
+```json
+{
+  "plugins": [
+    "plugin-sass"
+  ]
+}
+```
+
+This would include the plugin `html-bricks-plugin-sass`. Make sure it is installed in your project folder.
+
+> Notice the exclusion is `html-bricks-` in the plugin declaration. This part is optional, so you can include it or not depending on your preference.
+
+To create your own plugin, see the [developer documentation](developer).

@@ -16,7 +16,8 @@ const watch = flag === '--watch'
 
 let config = {
   sourceDir: 'src',
-  buildDir: 'build'
+  buildDir: 'build',
+  plugins: []
 }
 
 try {
@@ -90,6 +91,33 @@ function renderFile (name, content, modules, addWarning) {
   return renderedWithHead
 }
 
+function processPostBuildPlugins (files) {
+  function runSerial (funcs) {
+    return funcs.reduce((p, func) => {
+      return p.then(() => func())
+    }, Promise.resolve())
+  }
+
+  if (Array.isArray(config.plugins) && config.plugins.length) {
+    const funcs = config.plugins.map(pluginRaw => {
+      const pluginName = pluginRaw.match(/^html-bricks-/)
+        ? pluginRaw
+        : 'html-bricks-' + pluginRaw
+      const plugin = require(path.resolve(dirname, 'node_modules', pluginName))
+
+      if (plugin.postBuild) {
+        return () => plugin.postBuild(files)
+      } else {
+        return () => files
+      }
+    })
+
+    return runSerial(funcs)
+  }
+
+  return files
+}
+
 function build () {
   console.time('Build time')
 
@@ -117,18 +145,9 @@ function build () {
       }
     }
 
-    fs.emptyDir(path.resolve(dirname, config.buildDir))
-      .then(() => {
-        const mapped = otherFiles.map(mapFile)
-        return Promise.all(mapped.map(f => fs.copy(f.src, f.dest)))
-      })
-      .then(() => {
-        const mapped = moduleFiles.map(mapFile)
-
-        return Promise.all(mapped.map(f =>
-          fs.readFile(f.src, 'utf8').then((res) => ({ src: f.src, file: res }))
-        ))
-      })
+    Promise.all(moduleFiles.map(mapFile).map(f =>
+      fs.readFile(f.src, 'utf8').then((res) => ({ src: f.src, file: res }))
+    ))
       .then(res => {
         const modules = res.map(module => ({
           content: removeBreaks(module.file),
@@ -140,8 +159,32 @@ function build () {
         return Promise.all(mapped.map(f =>
           fs.readFile(f.src, 'utf8')
             .then(res => renderFile(getRelativePath(f.src), removeBreaks(res), modules, addWarning))
-            .then(html => fs.writeFile(f.dest, html, 'utf8'))
+            .then(html => ({
+              src: f.src,
+              dest: f.dest,
+              content: html
+            }))
         ))
+      })
+      .then(rendered => {
+        const mappedOtherFiles = otherFiles.map(mapFile)
+        return Promise.all(mappedOtherFiles.map(f =>
+          fs.readFile(f.src, 'utf8')
+            .then(content => ({
+              src: f.src,
+              dest: f.dest,
+              content
+            }))
+        ))
+          .then(res => rendered.concat(res))
+      })
+      .then(files => processPostBuildPlugins(files))
+      .then(files => {
+        return fs.emptyDir(path.resolve(dirname, config.buildDir))
+          .then(() => Promise.all(files.map(file =>
+            fs.ensureDir(path.dirname(file.dest))
+              .then(() => fs.writeFile(file.dest, file.content, 'utf8'))
+          )))
       })
       .then(() => {
         if (warnings.length > 0) {
