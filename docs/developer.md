@@ -25,7 +25,7 @@ exports.postBuild = function postBuild (files) {
 }
 ```
 
-> Note: The postBuild function must return a promise, and that promise should return a new list of files. Files now included in the result will not be written to disk.
+> Note: The postBuild function must return a promise, and that promise should return a new list of files. Files not included in the result will not be written to disk.
 
 Files is an array of the following model
 
