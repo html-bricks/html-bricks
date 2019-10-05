@@ -106,8 +106,12 @@ function processPostBuildPlugins (files) {
       const plugin = require(path.resolve(dirname, 'node_modules', pluginName))
 
       if (plugin.postBuild) {
+        console.log('Running ' + pluginName + '.postBuild\n')
+
         return () => plugin.postBuild(files)
       } else {
+        console.log(pluginName + ' has no postBuild, so it is ignored\n')
+
         return () => files
       }
     })
