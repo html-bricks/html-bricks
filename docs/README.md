@@ -2,7 +2,7 @@
 
 Using [html-bricks](https://github.com/gustavgb/html-bricks) is very easy but allows you to customize the setup to your preferences.
 
-The point of this project is to provide a simple way to modularize html files without building a space ship. Sometimes, all you need is a few *bricks* 😸
+The point of this project is to provide a simple way to modularize html files without building a space ship. Sometimes, all you need is a few *bricks* 🧱
 
 ## Installation
 
