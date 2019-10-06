@@ -2,7 +2,7 @@
 
 The easiest way to compile modularized html files into flat html files 😊
 
-Take a look at the [documentation](https://gustavgb.github.io/html-bricks) or clone the [template repository](https://github.com/gustavgb/html-bricks-template) to get started.
+Take a look at the [documentation](https://html-bricks.github.io) or clone the [template repository](https://github.com/html-bricks/html-bricks-template) to get started.
 
 ## Installation
 
