@@ -108,7 +108,7 @@ function processPostBuildPlugins (files) {
       if (plugin.postBuild) {
         console.log('Running ' + pluginName + '.postBuild\n')
 
-        return () => plugin.postBuild(files)
+        return () => plugin.postBuild(files, config)
       } else {
         console.log(pluginName + ' has no postBuild, so it is ignored\n')
 
@@ -166,14 +166,14 @@ function build () {
             .then(html => ({
               src: f.src,
               dest: f.dest,
-              content: html
+              content: Buffer.from(html)
             }))
         ))
       })
       .then(rendered => {
         const mappedOtherFiles = otherFiles.map(mapFile)
         return Promise.all(mappedOtherFiles.map(f =>
-          fs.readFile(f.src, 'utf8')
+          fs.readFile(f.src)
             .then(content => ({
               src: f.src,
               dest: f.dest,
@@ -187,7 +187,7 @@ function build () {
         return fs.emptyDir(path.resolve(dirname, config.buildDir))
           .then(() => Promise.all(files.map(file =>
             fs.ensureDir(path.dirname(file.dest))
-              .then(() => fs.writeFile(file.dest, file.content, 'utf8'))
+              .then(() => fs.writeFile(file.dest, file.content))
           )))
       })
       .then(() => {

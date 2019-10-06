@@ -32,8 +32,8 @@ Files is an array of the following model
 ```js
 {
   src: String, // Where is the file coming from
-  dest: String, // Where will the file go,
-  content: String // UTF-8 string containing the file contents that will be read.
+  dest: String, // Where will the file go
+  content: Buffer // Buffer containing the file contents that will be written
 }
 ```
 
