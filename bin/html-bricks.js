@@ -94,8 +94,8 @@ function renderFile (name, content, modules, addWarning) {
 function processPostBuildPlugins (files) {
   function runSerial (funcs) {
     return funcs.reduce((p, func) => {
-      return p.then(() => func())
-    }, Promise.resolve())
+      return p.then((res) => func(res))
+    }, Promise.resolve(files))
   }
 
   if (Array.isArray(config.plugins) && config.plugins.length) {
@@ -108,11 +108,11 @@ function processPostBuildPlugins (files) {
       if (plugin.postBuild) {
         console.log('Running ' + pluginName + '.postBuild\n')
 
-        return () => plugin.postBuild(files, config)
+        return (f) => plugin.postBuild(f, config)
       } else {
         console.log(pluginName + ' has no postBuild, so it is ignored\n')
 
-        return () => files
+        return (f) => f
       }
     })
 
