@@ -125,7 +125,7 @@ function processPostBuildPlugins (files) {
 function build () {
   console.time('Build time')
 
-  glob(config.sourceDir + '/**/*.*', function (err, files) {
+  glob(config.sourceDir + '/**/*', function (err, files) {
     if (err) {
       throw err
     }
@@ -173,14 +173,23 @@ function build () {
       .then(rendered => {
         const mappedOtherFiles = otherFiles.map(mapFile)
         return Promise.all(mappedOtherFiles.map(f =>
-          fs.readFile(f.src)
-            .then(content => ({
-              src: f.src,
-              dest: f.dest,
-              content
-            }))
+          fs.lstat(f.src)
+            .then(res => {
+              if (res.isFile()) {
+                return fs.readFile(f.src)
+              }
+            })
+            .then(content => {
+              if (content) {
+                return {
+                  src: f.src,
+                  dest: f.dest,
+                  content
+                }
+              }
+            })
         ))
-          .then(res => rendered.concat(res))
+          .then(res => rendered.concat(res.filter(Boolean)))
       })
       .then(files => processPostBuildPlugins(files))
       .then(files => {
