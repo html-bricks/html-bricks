@@ -4,6 +4,7 @@ const glob = require('glob')
 const path = require('path')
 const fs = require('fs-extra')
 const nodeWatch = require('node-watch')
+const minimatch = require('minimatch')
 
 const dirname = process.cwd()
 const flag = process.argv[2]
@@ -17,6 +18,7 @@ const watch = flag === '--watch'
 let config = {
   sourceDir: 'src',
   buildDir: 'build',
+  ignoreFileNames: [],
   plugins: []
 }
 
@@ -28,6 +30,22 @@ try {
   console.log('(Using custom config)\n')
 } catch (e) {
   console.log('(Using default config)\n')
+}
+
+function appendTimestampToFileName (pathName) {
+  return pathName.replace(/\/.+$/, function (str) {
+    if (!str.match(/\.html/)) {
+      const split = str.split('.')
+      return split[0] + Date.now() + (split[1] ? '.' + split[1] : '')
+    }
+    return str
+  })
+}
+
+function extractFileName (pathName) {
+  return pathName.replace(/(.*)\/.+$/, function (match, p1) {
+    return match.replace(p1 + '/', '')
+  })
 }
 
 function mapFile (file) {
@@ -192,6 +210,39 @@ function build () {
           .then(res => rendered.concat(res.filter(Boolean)))
       })
       .then(files => processPostBuildPlugins(files))
+      .then(files => files.map(file => {
+        if (!config.ignoreFileNames.find(pattern => minimatch(file.src, pattern)) || config.ignoreFileNames.length === 0) {
+          return Object.assign({}, file, {
+            dest: appendTimestampToFileName(file.dest)
+          })
+        }
+        return file
+      }))
+      .then(files => {
+        const fileNames = files
+          .filter(file => !file.src.match(/\.html/))
+          .map(file => ({
+            from: extractFileName(file.src),
+            to: extractFileName(file.dest)
+          }))
+        return files.map(file => {
+          if (file.src.match(/\/.+(html|css)/)) {
+            const next = Object.assign({}, file, {
+              content: file.content.toString('utf8')
+            })
+            fileNames.forEach(fileName => {
+              next.content = next.content.replace(
+                new RegExp(fileName.from, 'g'),
+                fileName.to
+              )
+            })
+            return Object.assign(next, {
+              content: Buffer.from(next.content)
+            })
+          }
+          return file
+        })
+      })
       .then(files => {
         return fs.emptyDir(path.resolve(dirname, config.buildDir))
           .then(() => Promise.all(files.map(file =>
