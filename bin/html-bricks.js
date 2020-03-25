@@ -226,7 +226,7 @@ function build () {
             to: extractFileName(file.dest)
           }))
         return files.map(file => {
-          if (file.src.match(/\/.+(html|css)/)) {
+          if (file.src.match(/\/.+(html|css|js)/)) {
             const next = Object.assign({}, file, {
               content: file.content.toString('utf8')
             })
