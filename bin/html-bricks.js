@@ -118,10 +118,18 @@ function processPostBuildPlugins (files) {
 
   if (Array.isArray(config.plugins) && config.plugins.length) {
     const funcs = config.plugins.map(pluginRaw => {
-      const pluginName = pluginRaw.match(/^html-bricks-/)
-        ? pluginRaw
-        : 'html-bricks-' + pluginRaw
-      const plugin = require(path.resolve(dirname, 'node_modules', pluginName))
+      let plugin
+      let pluginName
+      if (pluginRaw.match(/^\.\//)) {
+        pluginName = pluginRaw
+        plugin = require(path.resolve(dirname, pluginName))
+      } else if (pluginRaw.match(/^html-bricks-/)) {
+        pluginName = pluginRaw
+        plugin = require(path.resolve(dirname, 'node_modules', pluginName))
+      } else {
+        pluginName = 'html-bricks-' + pluginRaw
+        plugin = require(path.resolve(dirname, 'node_modules', pluginName))
+      }
 
       if (plugin.postBuild) {
         console.log('Running ' + pluginName + '.postBuild\n')
