@@ -19,7 +19,8 @@ let config = {
   sourceDir: 'src',
   buildDir: 'build',
   ignoreFileNames: [],
-  plugins: []
+  plugins: [],
+  ignoreFiles: []
 }
 
 try {
@@ -64,7 +65,9 @@ function removeBreaks (str) {
 }
 
 function getRelativePath (fullPath) {
-  return fullPath.replace(new RegExp('^' + path.resolve(dirname, config.sourceDir) + '/'), '')
+  return fullPath
+    .replace(new RegExp('^' + dirname + '/'), '')
+    .replace(new RegExp('^' + config.sourceDir + '/'), '')
 }
 
 const moduleReg = /<module>(.*)<\/module>\n/g
@@ -117,30 +120,40 @@ function processPostBuildPlugins (files) {
   }
 
   if (Array.isArray(config.plugins) && config.plugins.length) {
-    const funcs = config.plugins.map(pluginRaw => {
-      let plugin
-      let pluginName
-      if (pluginRaw.match(/^\.\//)) {
-        pluginName = pluginRaw
-        plugin = require(path.resolve(dirname, pluginName))
-      } else if (pluginRaw.match(/^html-bricks-/)) {
-        pluginName = pluginRaw
-        plugin = require(path.resolve(dirname, 'node_modules', pluginName))
-      } else {
-        pluginName = 'html-bricks-' + pluginRaw
-        plugin = require(path.resolve(dirname, 'node_modules', pluginName))
-      }
+    const funcs = config.plugins
+      .map(pluginRaw => {
+        if (typeof pluginRaw === 'string') {
+          return {
+            resolve: pluginRaw,
+            options: {}
+          }
+        }
+        return pluginRaw
+      })
+      .map(pluginObj => {
+        let plugin
+        let pluginName
+        if (pluginObj.resolve.match(/^\.\//)) {
+          pluginName = pluginObj.resolve
+          plugin = require(path.resolve(dirname, pluginName))
+        } else if (pluginObj.resolve.match(/^html-bricks-/)) {
+          pluginName = pluginObj.resolve
+          plugin = require(path.resolve(dirname, 'node_modules', pluginName))
+        } else {
+          pluginName = 'html-bricks-' + pluginObj.resolve
+          plugin = require(path.resolve(dirname, 'node_modules', pluginName))
+        }
 
-      if (plugin.postBuild) {
-        console.log('Running ' + pluginName + '.postBuild\n')
+        if (plugin.postBuild) {
+          console.log('Running ' + pluginName + '.postBuild\n')
 
-        return (f) => plugin.postBuild(f, config)
-      } else {
-        console.log(pluginName + ' has no postBuild, so it is ignored\n')
+          return (f) => plugin.postBuild(f, config, pluginObj.options)
+        } else {
+          console.log(pluginName + ' has no postBuild, so it is ignored\n')
 
-        return (f) => f
-      }
-    })
+          return (f) => f
+        }
+      })
 
     return runSerial(funcs)
   }
@@ -156,10 +169,11 @@ function build () {
       throw err
     }
 
-    const allHtmlFiles = files.filter(file => file.match(/\.html$/))
+    const filteredFiles = files.filter(file => !config.ignoreFiles.find(f => minimatch(getRelativePath(file), f)))
+    const allHtmlFiles = filteredFiles.filter(file => file.match(/\.html$/))
     const htmlFiles = allHtmlFiles.filter(file => !file.match(/\.module\.html$/))
     const moduleFiles = allHtmlFiles.filter(file => file.match(/\.module\.html$/))
-    const otherFiles = files.filter(file => file.match(/^((?!\.html).)*$/))
+    const otherFiles = filteredFiles.filter(file => file.match(/^((?!\.html).)*$/))
 
     console.log([
       'Found ' + htmlFiles.length + ' html files',
@@ -219,7 +233,7 @@ function build () {
       })
       .then(files => processPostBuildPlugins(files))
       .then(files => files.map(file => {
-        if (!config.ignoreFileNames.find(pattern => minimatch(file.src, pattern)) || config.ignoreFileNames.length === 0) {
+        if (!config.ignoreFileNames.find(pattern => minimatch(getRelativePath(file.src), pattern)) || config.ignoreFileNames.length === 0) {
           return Object.assign({}, file, {
             dest: appendTimestampToFileName(file.dest)
           })
